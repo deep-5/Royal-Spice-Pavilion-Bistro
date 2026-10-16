@@ -16,7 +16,9 @@ import {
   TableProperties,
   CircleDollarSign,
   BarChart3,
-  CheckCircle2
+  CheckCircle2,
+  PanelLeftOpen,
+  PanelLeftClose
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
@@ -27,6 +29,8 @@ interface HeaderProps {
   onOpenNotifications: () => void;
   onNavigate: (pageId: string) => void;
   onOpenQuickAction: (actionType: string) => void;
+  isSidebarCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -34,7 +38,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   onOpenNotifications,
   onNavigate,
-  onOpenQuickAction
+  onOpenQuickAction,
+  isSidebarCollapsed,
+  onToggleCollapse
 }) => {
   const {
     settings,
@@ -89,11 +95,21 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Left: Mobile Toggle & Branch Selector */}
       <div className="flex items-center gap-3">
         <button
-          onClick={onToggleSidebar}
-          className="p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors md:hidden"
-          title="Toggle Navigation Menu"
+          onClick={() => {
+            if (window.innerWidth < 768) {
+              onToggleSidebar();
+            } else if (onToggleCollapse) {
+              onToggleCollapse();
+            }
+          }}
+          className="p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
         >
-          <Menu className="w-5 h-5" />
+          {isSidebarCollapsed ? (
+            <PanelLeftOpen className="w-5 h-5 text-gray-700 hover:text-[#F5764B] transition-colors" />
+          ) : (
+            <Menu className="w-5 h-5 text-gray-700 hover:text-[#F5764B] transition-colors" />
+          )}
         </button>
 
         {/* Branch Selector Pill */}

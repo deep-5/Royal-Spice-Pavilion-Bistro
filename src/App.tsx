@@ -73,13 +73,36 @@ const MainLayout: React.FC = () => {
   const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
-  // Global Ctrl+K / Cmd+K listener
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('sidebar_collapsed', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  // Global Ctrl+K / Cmd+K and Ctrl+B / Cmd+B listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsSearchOpen(prev => !prev);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebarCollapse();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -348,6 +371,8 @@ const MainLayout: React.FC = () => {
         onNavigate={handleNavigate}
         isOpenMobile={isOpenMobile}
         onCloseMobile={() => setIsOpenMobile(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapse}
       />
 
       {/* Main Content Area */}
@@ -359,6 +384,8 @@ const MainLayout: React.FC = () => {
           onOpenNotifications={() => setIsNotificationsOpen(true)}
           onNavigate={handleNavigate}
           onOpenQuickAction={handleQuickAction}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapse}
         />
 
         {/* Scrollable Page Body */}
