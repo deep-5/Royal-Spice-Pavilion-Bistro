@@ -1,0 +1,6 @@
+/* Custom utility styles for print receipts and scrollbars */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
