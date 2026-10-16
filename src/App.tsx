@@ -93,7 +93,7 @@ const MainLayout: React.FC = () => {
     });
   };
 
-  // Global Ctrl+K / Cmd+K and Ctrl+B / Cmd+B listener
+  // Global Ctrl+K / Cmd+K, Ctrl+B / Cmd+B listener and window resize cleanup
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -105,8 +105,19 @@ const MainLayout: React.FC = () => {
         toggleSidebarCollapse();
       }
     };
+
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsOpenMobile(false);
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const handleNavigate = (pageId: string) => {
@@ -389,8 +400,8 @@ const MainLayout: React.FC = () => {
         />
 
         {/* Scrollable Page Body */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 bg-[#F8F9FA]">
-          <div className="mx-auto max-w-7xl">
+        <main className="flex-1 overflow-y-auto p-2.5 sm:p-4 md:p-6 lg:p-8 bg-[#F8F9FA] transition-all duration-300">
+          <div className="mx-auto w-full max-w-[1600px]">
             {renderActivePage()}
           </div>
         </main>

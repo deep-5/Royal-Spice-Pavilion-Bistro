@@ -43,7 +43,8 @@ import {
   ChevronRight,
   ChevronLeft,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  X
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -180,50 +181,65 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onCloseMobile();
   };
 
+  // Lock background scroll and handle Escape key on mobile drawer
+  React.useEffect(() => {
+    if (!isOpenMobile) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseMobile();
+      }
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpenMobile, onCloseMobile]);
+
   return (
     <>
       {/* Mobile backdrop */}
       {isOpenMobile && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 z-40 bg-gray-900/30  md:hidden"
+          className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-xs transition-opacity duration-200 md:hidden"
         />
       )}
 
       {/* Sidebar container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-200 bg-white transition-all duration-300 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-gray-200 bg-white shadow-2xl md:shadow-none transition-all duration-300 md:static md:translate-x-0 ${
           isOpenMobile ? 'translate-x-0' : '-translate-x-full'
-        } ${isCollapsed ? 'w-64 md:w-20' : 'w-64'}`}
+        } ${isCollapsed ? 'w-72 md:w-20' : 'w-72 md:w-64'}`}
       >
         {/* Brand / Logo */}
         <div
           className={`flex h-16 items-center border-b border-gray-200 bg-white transition-all ${
-            isCollapsed ? 'justify-center px-2' : 'justify-between px-4'
+            isCollapsed ? 'justify-between md:justify-center px-4 md:px-2' : 'justify-between px-4'
           }`}
         >
           <div className="flex items-center gap-3 overflow-hidden">
             <button
               onClick={isCollapsed ? onToggleCollapse : undefined}
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F5764B] text-white shadow-xs transition-transform ${
-                isCollapsed ? 'hover:scale-105 cursor-pointer' : ''
+                isCollapsed ? 'md:hover:scale-105 md:cursor-pointer' : ''
               }`}
-              title={isCollapsed ? 'Click to expand sidebar' : settings.name}
+              title={isCollapsed ? 'Click to expand sidebar (Ctrl+B)' : settings.name}
             >
               <Utensils className="h-5 w-5" />
             </button>
-            {!isCollapsed && (
-              <div className="min-w-0 flex-1">
-                <h1 className="text-sm font-bold tracking-tight text-gray-900 truncate">
-                  {settings.name}
-                </h1>
-                <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                  Restaurant OS
-                </p>
-              </div>
-            )}
+            <div className={`min-w-0 flex-1 ${isCollapsed ? 'block md:hidden' : 'block'}`}>
+              <h1 className="text-sm font-bold tracking-tight text-gray-900 truncate">
+                {settings.name}
+              </h1>
+              <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                Restaurant OS
+              </p>
+            </div>
           </div>
 
+          {/* Desktop Collapse Button */}
           {!isCollapsed && (
             <button
               onClick={onToggleCollapse}
@@ -233,10 +249,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <ChevronLeft className="h-4 w-4" />
             </button>
           )}
+
+          {/* Mobile Drawer Close Button */}
+          <button
+            onClick={onCloseMobile}
+            className="flex md:hidden h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            title="Close navigation menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Navigation list */}
-        <div className={`flex-1 overflow-y-auto py-4 space-y-4 bg-white ${isCollapsed ? 'px-2' : 'px-3'}`}>
+        <div className={`flex-1 overflow-y-auto py-4 space-y-4 bg-white ${isCollapsed ? 'px-3 md:px-2' : 'px-3'}`}>
           {navGroups.map((group) => {
             // Filter items user has permission to view
             const visibleItems = group.items.filter(item => hasPermission(item.module));
@@ -245,7 +270,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             return (
               <div key={group.title}>
                 {isCollapsed ? (
-                  <div className="my-2 border-t border-gray-100 mx-1" title={group.title} />
+                  <>
+                    <div className="hidden md:block my-2 border-t border-gray-100 mx-1" title={group.title} />
+                    <h3 className="block md:hidden px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                      {group.title}
+                    </h3>
+                  </>
                 ) : (
                   <h3 className="px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
                     {group.title}
@@ -263,7 +293,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         title={isCollapsed ? `${item.label}${item.badge !== undefined ? ` (${item.badge})` : ''}` : undefined}
                         className={`group relative flex items-center rounded-xl text-xs font-medium transition-all ${
                           isCollapsed
-                            ? 'w-10 h-10 mx-auto justify-center p-0'
+                            ? 'w-full md:w-10 md:h-10 md:mx-auto md:justify-center justify-between px-3.5 py-2.5 md:p-0'
                             : 'w-full justify-between px-3.5 py-2.5'
                         } ${
                           isActive
@@ -271,22 +301,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             : 'text-gray-600 hover:bg-orange-50/70 hover:text-[#F5764B]'
                         }`}
                       >
-                        <div className={`relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5 truncate'}`}>
+                        <div className={`relative flex items-center ${
+                          isCollapsed ? 'gap-2.5 md:gap-0 md:justify-center truncate' : 'gap-2.5 truncate'
+                        }`}>
                           <Icon
-                            className={`shrink-0 transition-colors ${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${
-                              isActive ? 'text-white' : 'text-gray-400 group-hover:text-[#F5764B]'
-                            }`}
+                            className={`shrink-0 transition-colors ${
+                              isCollapsed ? 'h-4 w-4 md:h-5 md:w-5' : 'h-4 w-4'
+                            } ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-[#F5764B]'}`}
                           />
-                          {!isCollapsed && <span className="truncate">{item.label}</span>}
+                          <span className={`truncate ${isCollapsed ? 'block md:hidden' : 'block'}`}>
+                            {item.label}
+                          </span>
                           {isCollapsed && item.badge !== undefined && (
-                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#F5764B] text-[9px] font-bold text-white px-1 shadow-xs border-2 border-white">
+                            <span className="hidden md:flex absolute -top-1.5 -right-1.5 h-4 min-w-[16px] items-center justify-center rounded-full bg-[#F5764B] text-[9px] font-bold text-white px-1 shadow-xs border-2 border-white">
                               {typeof item.badge === 'number' && item.badge > 9 ? '9+' : item.badge}
                             </span>
                           )}
                         </div>
-                        {!isCollapsed && item.badge !== undefined && (
+                        {item.badge !== undefined && (
                           <span
                             className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                              isCollapsed ? 'block md:hidden' : 'block'
+                            } ${
                               isActive
                                 ? 'bg-white/20 text-white'
                                 : item.badgeColor || 'bg-gray-100 text-gray-600'
@@ -310,14 +346,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleItemClick('customer-qr-menu')}
             title={isCollapsed ? "Customer QR Menu" : undefined}
             className={`flex items-center rounded-lg bg-gray-50 border border-gray-200 hover:border-[#f5764b] hover:bg-orange-50/50 text-gray-800 text-xs font-semibold transition-colors ${
-              isCollapsed ? 'h-10 w-10 mx-auto justify-center p-0' : 'w-full justify-between p-2'
+              isCollapsed
+                ? 'w-full md:w-10 md:h-10 md:mx-auto md:justify-center justify-between p-2 md:p-0'
+                : 'w-full justify-between p-2'
             }`}
           >
-            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'}`}>
+            <div className={`flex items-center ${isCollapsed ? 'gap-2 md:gap-0 md:justify-center' : 'gap-2'}`}>
               <QrCode className="w-4 h-4 text-[#f5764b] shrink-0" />
-              {!isCollapsed && <span>Customer QR Menu</span>}
+              <span className={isCollapsed ? 'block md:hidden' : 'block'}>Customer QR Menu</span>
             </div>
-            {!isCollapsed && <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+            <ChevronRight className={`w-3.5 h-3.5 text-gray-400 ${isCollapsed ? 'block md:hidden' : 'block'}`} />
           </button>
 
           {/* Desktop Collapse / Expand Toggle Button */}

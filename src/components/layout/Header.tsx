@@ -116,13 +116,13 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative">
           <button
             onClick={() => setShowBranchMenu(!showBranchMenu)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-gray-200 hover:border-[#f5764b]/50 bg-gray-50/80 hover:bg-white text-xs font-bold text-gray-800 transition-all shadow-2xs"
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full border border-gray-200 hover:border-[#f5764b]/50 bg-gray-50/80 hover:bg-white text-xs font-bold text-gray-800 transition-all shadow-2xs"
           >
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 text-[#f5764b]">
               <Building2 className="w-3 h-3" />
             </span>
             <span className="hidden sm:inline text-gray-400 font-semibold">{settings.name}:</span>
-            <span className="truncate max-w-[130px] text-gray-900 font-extrabold">{currentBranch.name}</span>
+            <span className="truncate max-w-[85px] sm:max-w-[130px] text-gray-900 font-extrabold">{currentBranch.name}</span>
             <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
           </button>
 
@@ -152,6 +152,15 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
         </div>
+
+        {/* Mobile Search Button */}
+        <button
+          onClick={onOpenSearch}
+          className="flex md:hidden p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          title="Search modules and actions"
+        >
+          <Search className="w-4 h-4 text-gray-600" />
+        </button>
 
         {/* Global Search Bar (Moniex Pill Style) */}
         <button
